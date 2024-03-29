@@ -1,0 +1,26 @@
+# Backend
+backend/dist
+backend/node_modules
+
+#Frontend
+frontend/dist
+frontend/node_modules
+
+
+# IDE - VSCode
+backend/.vscode/*
+frontend/.vscode/*
+backend/uploads/*
+*.pdf
+*.doc
+backend/uploads/Certifico.doc
+backend/uploads/Codigo Etica para el empleo de la Red ECM2.doc
+backend/uploads/contrato Versat.pdf
+backend/uploads/Curriculum CV Rorber.pdf
+backend/uploads/DEBERES DE LOS RESPONSABLES DE LOS MEDIOS INFORMÁTICOS.doc
+backend/uploads/EXPEDIENTE TECNICO 31.doc
+backend/uploads/Infari.pdf
+backend/uploads/Metodología Plan Seg. Inf.2.doc
+backend/uploads/NORMAS PARA USO CORREO NACIONAL (ver 0).pdf
+backend/uploads/r33534-ucm (tarifas de los telef de la pizarra ucm).pdf
+backend/uploads/Resumen MSI.doc
