@@ -5,11 +5,11 @@ const CrearRegistro = (values = {}, files = [], conscData = 0) => {
   const {
     estado,
     fecha,
-    departamentos,
+    unidades,
     procedencia,
     destino,
     idClasificacion,
-    idTipoDoc,
+    idTipoDocumento,
   } = values;
 
   const file = files.flatMap((value) => [value.name]);
@@ -17,13 +17,13 @@ const CrearRegistro = (values = {}, files = [], conscData = 0) => {
   return {
     ...values,
     estado: estado?.nombre,
-    departamentos: departamentos.map((row) => row.id),
+    unidades: unidades.map((row) => row.id),
     procedencia: procedencia.map((row) => row.id),
     destino: destino.map((row) => row.id),
     conteo: conscData,
     fecha: values.fecha ? dayjs(fecha).format("YYYY-MM-DD") : null,
-    ClasificacionDocumentoID: idClasificacion?.id,
-    TipoDocumentoID: idTipoDoc?.id,
+    idClasificacion: idClasificacion?.id,
+    idTipoDocumento: idTipoDocumento?.id,
     file: file,
   };
 };

@@ -17,13 +17,14 @@ import { FormatDate } from "../../../utilities";
 
 import { useSelector } from "react-redux";
 import Swal from "sweetalert2";
-import api from "../../../services/axios.service";
 import { RoutesURLRoot } from "../../../contants";
 import { useShowMessage } from "../../../hooks/useShowMessage";
 import { v4 as uuid } from "uuid";
+import axios from "../../../api/axios";
+import { PropTypes } from "prop-types";
 
 export default function Detail() {
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading] = useState(true);
   const [aprobaciones, setAprobaciones] = useState();
   const { id } = useParams();
 
@@ -34,7 +35,7 @@ export default function Detail() {
   });
 
   const FetchingAprobaciones = async () => {
-    const result = await api.get(
+    const result = await axios.get(
       `${RoutesURLRoot.APROBACIONES}/reg/${current[0]?.id}`
     );
 
@@ -185,14 +186,14 @@ function Botones({ datos }) {
                     observaciones: obs,
                   };
 
-                  const resultInsert = await api.post(
+                  const resultInsert = await axios.post(
                     RoutesURLRoot.APROBACIONES,
                     reg
                   );
 
                   let estado = "";
 
-                  const count = await api.get(
+                  const count = await axios.get(
                     `${RoutesURLRoot.FIRMANTES}/count/${idFlujo}`
                   );
 
@@ -202,7 +203,7 @@ function Botones({ datos }) {
                       : (estado = "Por aprobar");
                   }
 
-                  const resultUpdate = await api.put(
+                  const resultUpdate = await axios.put(
                     `${RoutesURLRoot.REGISTROS}/${idRegistroDoc}`,
                     {
                       ordenf: ordenf,
@@ -224,25 +225,7 @@ function Botones({ datos }) {
             Aprobar
           </Button>
           {/*Boton de redirigir el registro*/}
-          <Button
-            variant="contained"
-            color="error"
-            onClick={() => {
-              Swal.fire({
-                title: "Redirigir este registro?",
-                text: "¡Esta acción no se puede deshacer!",
-                icon: "warning",
-                showCancelButton: true,
-                cancelButtonText: "No",
-                confirmButtonColor: "#3085d6",
-                cancelButtonColor: "#d33",
-                confirmButtonText: "¡Si!",
-              }).then(async (confir) => {
-                if (confir.isConfirmed) {
-                }
-              });
-            }}
-          >
+          <Button variant="contained" color="error">
             Redirigir
           </Button>
           <TextField
@@ -250,7 +233,7 @@ function Botones({ datos }) {
             placeholder="Observaciones"
             size="small"
             onChange={(event) => {
-              setObs((prev) => event.target.value);
+              setObs(() => event.target.value);
               console.log(event.target.value);
             }}
             multiline
@@ -261,6 +244,10 @@ function Botones({ datos }) {
     </>
   );
 }
+
+Botones.propTypes = {
+  datos: PropTypes.object,
+};
 
 /**Función para actualizar las trazas de los usuarios */
 function NewItem({ prp }) {
@@ -282,3 +269,7 @@ function NewItem({ prp }) {
     </Stack>
   );
 }
+
+NewItem.propTypes = {
+  prp: PropTypes.object,
+};

@@ -1,11 +1,10 @@
-import { lazy } from "react";
-import PageRoutes from "../../Component/pageRoutes";
+import * as React from "react";
 
-const VIEW = lazy(async () => await import("./Views/view"));
-const INSERT = lazy(async () => await import("./Views/insert"));
-const EDIT = lazy(async () => await import("./Views/edit"));
-const DETAIL = lazy(async () => await import("./Views/detail"));
+const VIEW = React.lazy(async () => await import("./Views/view"));
+const FORMULARIO = React.lazy(async () => await import("./Views/formulario"));
+const DETAIL = React.lazy(async () => await import("./Views/detail"));
+import PageRoutes from "./../../Component/pageRoutes";
 
 export default function ClasificacionDoc() {
-  return <PageRoutes VIEW={VIEW} INSERT={INSERT} EDIT={EDIT} DETAIL={DETAIL} />;
+  return <PageRoutes VIEW={VIEW} FORM={FORMULARIO} DETAIL={DETAIL} />;
 }

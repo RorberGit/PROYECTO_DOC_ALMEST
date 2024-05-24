@@ -18,22 +18,22 @@ import { v4 as uuid } from "uuid";
 
 import {
   CrearRegistro,
-  FetchData,
-  FetchID,
   ObtenerConsecutivo,
   PostTrazas,
   UploadsFiles,
 } from "../Utilities";
 
 import { AutoCompletar, CampoTexto, Archivos, Fecha } from "../Component";
-import { useNavigate, useSearchParams } from "react-router-dom";
+import { useSearchParams } from "react-router-dom";
 import { RoutesURLRoot } from "../../contants";
 
-import { FIELD_ESTADO, validation_OPCI } from "../Contants";
-
 import dayjs from "dayjs";
-import { api } from "../../services";
+
 import { useShowMessage } from "../../hooks/useShowMessage";
+import { useFetch, useRouter } from "../../hooks";
+import { initialData, initialEstado, validation_OPCI } from "../resources";
+
+import useAxiosToken from "../../hooks/useAxiosToken";
 
 export default function Formulario() {
   let [searchParams] = useSearchParams();
@@ -41,64 +41,57 @@ export default function Formulario() {
   const action = searchParams.get("action");
   const id = searchParams.get("id");
 
-  const [loadingV, setLoadingV] = useState(false);
-  const [loadingC, setLoadingC] = useState(false);
-  const [loadingU, setLoadingU] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   const user = useSelector((state) => state.user);
 
-  const [clasificacion, setClasificacion] = useState([]);
-
-  const [procedencia, setProcedencia] = useState([]);
-  const [destino, setDestino] = useState([]);
-
-  const [departamento, setDepartamento] = useState([]);
-  const [tipodoc, setTipoDoc] = useState([]);
-
   const [files, setFiles] = useState([]);
 
-  const [prev, setPrev] = useState([]);
-
-  const navigate = useNavigate();
+  const router = useRouter();
   const [Message] = useShowMessage();
 
-  if (action === "update") {
-    const { data, loading } = FetchID(`${RoutesURLRoot.OPCI}/find/${id}`);
+  const [data, setData] = useState(initialData);
 
-    if (JSON.stringify(data) !== JSON.stringify(prev)) {
-      setPrev(data);
+  const axiosToken = useAxiosToken();
 
-      if (data?.file) {
-        const temp = data?.file.map((item) => ({ id: uuid(), name: item }));
+  const tipodoc = useFetch(RoutesURLRoot.TIPODOC);
+  const clasificacion = useFetch(RoutesURLRoot.DOCCLASIFICACION);
+  const procedencia = useFetch(RoutesURLRoot.PROCEDENCIA);
+  const destino = useFetch(RoutesURLRoot.DESTINO);
+  const unidades = useFetch(RoutesURLRoot.UNIDADES);
 
-        setFiles(temp);
-      }
+  const ColocarFiles = (value) => {
+    if (value.length)
+      setFiles(value.map((item) => ({ id: uuid(), name: item })));
+  };
 
-      if (loading) setLoadingU(loading);
-    }
-  }
+  useEffect(() => {
+    if (action === "update") {
+      axiosToken
+        .get(`${RoutesURLRoot.OPCI}/find/${id}`)
+        .then((response) => {
+          ColocarFiles(response.data.file);
+          setData(response.data);
+        })
+        .catch((error) => console.error("error :>", error))
+        .finally(() => setLoading(true));
+    } else setLoading(true);
+  }, [action, axiosToken, id]);
 
   const initialValues = {
-    codigo: action === "insert" ? "" : prev?.codigo,
-    estado:
-      action === "insert"
-        ? null
-        : FIELD_ESTADO.filter((item) => item.nombre === prev?.estado)[0],
-    procedencia: action === "insert" ? [] : prev?.procedencia,
-    destino: action === "insert" ? [] : prev?.destino,
-    departamentos: action === "insert" ? [] : prev?.departamentos,
-    descripcion: action === "insert" ? "" : prev?.descripcion,
-    idClasificacion:
-      action === "insert" ? null : prev?.ClasificacionDocumento_relation,
-    idTipoDoc: action === "insert" ? null : prev?.tipodocumento_relation,
-    fecha:
-      action === "insert"
-        ? null
-        : prev?.fecha === null
-        ? null
-        : dayjs(prev?.fecha),
+    codigo: data.codigo,
+    estado: data.estado
+      ? initialEstado.find((item) => item.nombre === data.estado)
+      : data.estado,
+    procedencia: data.procedencia,
+    destino: data.destino,
+    unidades: data.unidades,
+    descripcion: data.descripcion,
+    idClasificacion: data.clasificacion_relation,
+    idTipoDocumento: data.tipodocumento_relation,
+    fecha: data.fecha ? dayjs(data?.fecha) : data.fecha,
     file: [],
-    nota: action === "insert" ? "" : prev?.nota,
+    nota: data.nota,
   };
 
   const addFiles = (file) => {
@@ -111,28 +104,6 @@ export default function Formulario() {
   const deleteFiles = (id) => {
     setFiles((old) => old.filter((item) => item.id !== id));
   };
-
-  useEffect(() => {
-    const Fetch = async () =>
-      FetchData(
-        setClasificacion,
-        setProcedencia,
-        setDestino,
-        setDepartamento,
-        setTipoDoc,
-        setLoadingC
-      );
-
-    Fetch();
-  }, []);
-
-  useEffect(() => {
-    if (loadingC) {
-      if (action === "update") {
-        if (loadingU) setLoadingV(true);
-      } else setLoadingV(true);
-    }
-  }, [action, loadingC, loadingU]);
 
   //funsion del submit
   const HandleFormSubmit = async (values) => {
@@ -149,9 +120,9 @@ export default function Formulario() {
       });
     }
 
-    if (action === "insert") {
+    if (action === "create") {
       //Insertar----------------------------
-      await api
+      axiosToken
         .post(RoutesURLRoot.OPCI, registro)
         .then(async (response) => {
           Message("Registro agregado exitosamente", "success");
@@ -160,7 +131,7 @@ export default function Formulario() {
           await PostTrazas(action, response.data.data.id, user);
 
           //Redirigir la URL
-          navigate(`/${RoutesURLRoot.OPCI}`, { replace: true });
+          router.push(`/${RoutesURLRoot.OPCI}`);
         })
         .catch((error) => {
           console.error("error :>", error);
@@ -176,7 +147,7 @@ export default function Formulario() {
       //Eliminar valor de conteo
       delete registro.conteo;
 
-      await api
+      axiosToken
         .put(`${RoutesURLRoot.OPCI}/${id}`, registro)
         .then(async (response) => {
           Message("Registro actualizado exitosamente", "success");
@@ -184,7 +155,7 @@ export default function Formulario() {
           //Salva de trazas de las acciones
           await PostTrazas(action, response.data.data.id, user);
 
-          navigate(`/${RoutesURLRoot.OPCI}`, { replace: true });
+          router.push(`/${RoutesURLRoot.OPCI}`);
         })
         .catch((error) => {
           console.error("error :>", error);
@@ -198,16 +169,16 @@ export default function Formulario() {
     }
   };
 
-  return loadingV ? (
+  return loading ? (
     <>
       <Titles
         title={
-          action === "insert"
+          action === "create"
             ? "Crear Registro de Documentos"
             : "Actualizar registros"
         }
         subtitle={
-          action === "insert"
+          action === "create"
             ? "Crear un nuevo registro documental"
             : "Editar registros de documentos OPCI"
         }
@@ -237,7 +208,7 @@ export default function Formulario() {
               >
                 {/*Estado */}
                 <AutoCompletar
-                  options={FIELD_ESTADO}
+                  options={initialEstado}
                   label="Tipo de registro"
                   value={values.estado}
                   setFieldValue={setFieldValue}
@@ -249,30 +220,34 @@ export default function Formulario() {
                 />
 
                 {/*Tipo de Documentos */}
-                <AutoCompletar
-                  options={tipodoc}
-                  label="Tipo de documento"
-                  value={values.idTipoDoc}
-                  setFieldValue={setFieldValue}
-                  field="idTipoDoc"
-                  handleBlur={handleBlur}
-                  touched={touched.idTipoDoc}
-                  errors={errors.idTipoDoc}
-                  ncol="5"
-                />
+                {tipodoc.loading && (
+                  <AutoCompletar
+                    options={tipodoc.data}
+                    label="Tipo de documento"
+                    value={values.idTipoDocumento}
+                    setFieldValue={setFieldValue}
+                    field="idTipoDocumento"
+                    handleBlur={handleBlur}
+                    touched={touched.idTipoDocumento}
+                    errors={errors.idTipoDocumento}
+                    ncol="5"
+                  />
+                )}
 
                 {/*Clasificacion de Documentos */}
-                <AutoCompletar
-                  options={clasificacion}
-                  label="Clasificación"
-                  value={values.idClasificacion}
-                  setFieldValue={setFieldValue}
-                  field="idClasificacion"
-                  handleBlur={handleBlur}
-                  touched={touched.idClasificacion}
-                  errors={errors.idClasificacion}
-                  ncol="5"
-                />
+                {clasificacion.loading && (
+                  <AutoCompletar
+                    options={clasificacion.data}
+                    label="Clasificación"
+                    value={values.idClasificacion}
+                    setFieldValue={setFieldValue}
+                    field="idClasificacion"
+                    handleBlur={handleBlur}
+                    touched={touched.idClasificacion}
+                    errors={errors.idClasificacion}
+                    ncol="5"
+                  />
+                )}
 
                 {/*Descripción*/}
                 <CampoTexto
@@ -287,18 +262,21 @@ export default function Formulario() {
                 />
 
                 {/* Procedencia */}
-                <AutoCompletar
-                  multiple={true}
-                  options={procedencia}
-                  label="Procedencia"
-                  value={values.procedencia}
-                  setFieldValue={setFieldValue}
-                  field="procedencia"
-                  handleBlur={handleBlur}
-                  touched={touched.procedencia}
-                  errors={errors.procedencia}
-                  ncol="4"
-                />
+
+                {procedencia.loading && (
+                  <AutoCompletar
+                    multiple={true}
+                    options={procedencia.data}
+                    label="Procedencia"
+                    value={values.procedencia}
+                    setFieldValue={setFieldValue}
+                    field="procedencia"
+                    handleBlur={handleBlur}
+                    touched={touched.procedencia}
+                    errors={errors.procedencia}
+                    ncol="4"
+                  />
+                )}
 
                 {/* Registro de Procedencia */}
                 <CampoTexto
@@ -324,18 +302,20 @@ export default function Formulario() {
                 />
 
                 {/*Destino*/}
-                <AutoCompletar
-                  multiple={true}
-                  options={destino}
-                  label="Destino"
-                  value={values.destino}
-                  setFieldValue={setFieldValue}
-                  field="destino"
-                  handleBlur={handleBlur}
-                  touched={touched.destino}
-                  errors={errors.destino}
-                  ncol="4"
-                />
+                {destino.loading && (
+                  <AutoCompletar
+                    multiple={true}
+                    options={destino.data}
+                    label="Destino"
+                    value={values.destino}
+                    setFieldValue={setFieldValue}
+                    field="destino"
+                    handleBlur={handleBlur}
+                    touched={touched.destino}
+                    errors={errors.destino}
+                    ncol="4"
+                  />
+                )}
 
                 {/**Nota */}
                 <CampoTexto
@@ -352,18 +332,20 @@ export default function Formulario() {
                 />
 
                 {/* Departamento */}
-                <AutoCompletar
-                  multiple={true}
-                  options={departamento}
-                  label="Visto en áreas"
-                  value={values.departamentos}
-                  setFieldValue={setFieldValue}
-                  field="departamentos"
-                  handleBlur={handleBlur}
-                  touched={touched.departamentos}
-                  errors={errors.departamentos}
-                  ncol="12"
-                />
+                {unidades.loading && (
+                  <AutoCompletar
+                    multiple={true}
+                    options={unidades.data}
+                    label="Visto en áreas"
+                    value={values.unidades}
+                    setFieldValue={setFieldValue}
+                    field="unidades"
+                    handleBlur={handleBlur}
+                    touched={touched.unidades}
+                    errors={errors.unidades}
+                    ncol="12"
+                  />
+                )}
 
                 {/**File */}
                 <TextField
@@ -383,7 +365,7 @@ export default function Formulario() {
 
               <Box m={2} display="flex" justifyContent="end">
                 <Button type="submit" variant="contained">
-                  {action === "insert"
+                  {action === "create"
                     ? "Crear nuevo registro"
                     : "Actualizar registro"}
                 </Button>
@@ -398,7 +380,7 @@ export default function Formulario() {
   ) : (
     <Backdrop
       sx={{ color: "#fff", zIndex: (theme) => theme.zIndex.drawer + 1 }}
-      open={!loadingV}
+      open={!loading}
     >
       <CircularProgress color="inherit" />
     </Backdrop>

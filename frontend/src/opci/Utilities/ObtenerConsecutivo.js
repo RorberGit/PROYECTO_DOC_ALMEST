@@ -1,9 +1,9 @@
+import { axiosToken } from "../../api/axios";
 import { RoutesURLRoot } from "../../contants";
-import { api } from "../../services";
 
 const ObtenerConsecutivo = async () => {
   try {
-    const response = await api.get(
+    const response = await axiosToken.get(
       `${RoutesURLRoot.OPCI}/${RoutesURLRoot.CONSECUTIVO}`
     );
 

@@ -5,32 +5,41 @@ import {
   CircularProgress,
   TextField,
 } from "@mui/material";
-import { Formik, replace } from "formik";
+import { Formik } from "formik";
 import * as yup from "yup";
 import Titles from "../../../Component/Titles";
 
-import api from "../../../services/axios.service";
 import { RoutesURLRoot } from "../../../contants/routes.constans";
-import { useNavigate, useParams } from "react-router-dom";
+import { useParams } from "react-router-dom";
 import { useShowMessage } from "../../../hooks/useShowMessage";
-import { useEffect, useState } from "react";
-import { useEspecialidadById } from "../../../Configuration/hooks/useEspecialidadById";
+import { useState } from "react";
+import axios from "../../../api/axios";
+import { useRouter } from "./../../../hooks/use-router";
 
 const validationSchema = yup.object().shape({
   especialidades: yup.string().required("Campo requerido"),
 });
 
 export default function Edit() {
-  const [isLoading, setIsLoading] = useState(false);
-  const navigate = useNavigate();
+  const [isLoading] = useState(false);
+  const router = useRouter();
   const [Message] = useShowMessage();
 
   const { id } = useParams();
 
-  const [especialidad] = useEspecialidadById(id);
+  //const [especialidad] = useEspecialidadById(id);
+
+  //probicional
 
   const initialValues = {
-    especialidades: especialidad.especialidades ? especialidad.especialidades : "",
+    especialidades: null,
+  };
+
+  /*
+  const initialValues = {
+    especialidades: especialidad.especialidades
+      ? especialidad.especialidades
+      : "",
   };
 
   useEffect(() => {
@@ -40,15 +49,18 @@ export default function Edit() {
       }, 200);
     }
   }, [especialidad]);
-
+*/
   const handleFormSubmit = async (values) => {
-    await api
+    await axios
       .put(`${RoutesURLRoot.ESPECIALIDADES}/${id}`, values)
       .then((result) => {
         if (result.data.statusCode === 200) {
-          Message(`Especialidad ${values.especialidades} actualizado exitosamente`, "success");
+          Message(
+            `Especialidad ${values.especialidades} actualizado exitosamente`,
+            "success"
+          );
 
-          navigate(`/${RoutesURLRoot.ROOT}/${RoutesURLRoot.ESPECIALIDADES}`, replace);
+          router.push(`/${RoutesURLRoot.ROOT}/${RoutesURLRoot.ESPECIALIDADES}`);
         }
       })
       .catch((error) => Message(error.response.data.message, "error"));

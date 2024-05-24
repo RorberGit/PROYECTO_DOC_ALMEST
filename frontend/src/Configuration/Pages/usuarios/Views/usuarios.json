@@ -1,0 +1,24 @@
+{
+  "id": "26ca13e4-4305-4099-b52e-7e0b37368cbe",
+  "user": "jose",
+  "fullname": "Jose Lozada Legra",
+  "dni": "",
+  "email": "",
+  "roles": "ejecutor",
+  "unidad_relation": {
+    "id": "537d4de5-8c9e-42fb-9100-67304b892740",
+    "nombre": "UBI Ramón de Antilla"
+  },
+  "area_relation": {
+    "id": "5a18f5a6-b2af-49c0-a3e4-7e9dd3c72ce4",
+    "nombre": "B61a"
+  },
+  "cargo_relation": {
+    "id": "d18bd478-6a62-4767-a67a-d7970b9648d4",
+    "nombre": "Especialista"
+  },
+  "especialidad_relation": {
+    "id": "382301ce-4134-41a1-8a59-548fd12c164a",
+    "nombre": "Acabado"
+  }
+}

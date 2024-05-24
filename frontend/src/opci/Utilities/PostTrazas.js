@@ -1,5 +1,5 @@
+import axios from "../../api/axios";
 import { RoutesURLRoot } from "../../contants";
-import { api } from "../../services";
 
 export const PostTrazas = async (action = "", id = "", user = {}) => {
   const rowlog = {
@@ -9,5 +9,5 @@ export const PostTrazas = async (action = "", id = "", user = {}) => {
     UsuarioId: user.idUsuario,
   };
 
-  return await api.post(RoutesURLRoot.TRAZASOPCI, rowlog);
+  return await axios.post(RoutesURLRoot.TRAZASOPCI, rowlog);
 };

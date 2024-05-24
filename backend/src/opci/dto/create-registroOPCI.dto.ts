@@ -5,11 +5,7 @@ import {
   IsOptional,
   IsString,
 } from 'class-validator';
-import {
-  Departamentos,
-  ProcedenciaEntity,
-  DestinoEntity,
-} from '../../entities';
+import { ProcedenciaEntity, DestinoEntity, Unidades } from '../../entities';
 
 export class CreateRegistroOPCIDto {
   @IsNumber()
@@ -27,13 +23,13 @@ export class CreateRegistroOPCIDto {
   descripcion: string;
 
   @IsString()
-  TipoDocumentoID: string;
+  idTipoDocumento: string;
 
   @IsString()
-  ClasificacionDocumentoID: string;
+  idClasificacion: string;
 
   @IsArray()
-  departamentos: Departamentos[];
+  unidades: Unidades[];
 
   @IsArray()
   procedencia: ProcedenciaEntity[];

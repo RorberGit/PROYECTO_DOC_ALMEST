@@ -1,4 +1,3 @@
-import { useState } from "react";
 import Divider from "@mui/material/Divider";
 import Drawer from "@mui/material/Drawer";
 import List from "@mui/material/List";
@@ -7,8 +6,6 @@ import ListItem from "@mui/material/ListItem";
 import ListItemButton from "@mui/material/ListItemButton";
 import ListItemIcon from "@mui/material/ListItemIcon";
 import ListItemText from "@mui/material/ListItemText";
-import { useNavigate } from "react-router-dom";
-import { replace } from "formik";
 import {
   Apartment,
   Diversity3,
@@ -18,6 +15,10 @@ import {
   ManageAccounts,
   School,
 } from "@mui/icons-material";
+
+import { usePathname, useRouter } from "../../hooks";
+
+import { Link } from "react-router-dom";
 
 const categories = [
   {
@@ -33,7 +34,6 @@ const categories = [
         icon: <HomeWork />,
         path: "units",
       },
-      { id: "Áreas", icon: <Apartment />, path: "areas" },
       { id: "Cargos", icon: <Diversity3 />, path: "positions" },
       { id: "Especialidades", icon: <School />, path: "specialties" },
     ],
@@ -46,10 +46,16 @@ const categories = [
         icon: <InsertDriveFile />,
         path: "classification",
       },
+      { id: "Tipo de Documentos", icon: <InsertDriveFile />, path: "type" },
       {
-        id: "Otras Entidades",
-        icon: <HomeWork />,
-        path: "otherentity",
+        id: "Procedencia",
+        icon: <Apartment />,
+        path: "origin",
+      },
+      {
+        id: "Destino",
+        icon: <Apartment />,
+        path: "destiny",
       },
     ],
   },
@@ -72,8 +78,10 @@ const itemCategory = {
 
 export default function Navigator(props) {
   const { ...other } = props;
-  const navigate = useNavigate();
-  const [selected, setSelected] = useState("Usuarios");
+
+  const router = useRouter();
+
+  const pathname = usePathname();
 
   return (
     <Drawer variant="permanent" {...other}>
@@ -84,7 +92,7 @@ export default function Navigator(props) {
           Configuración
         </ListItem>
         <ListItem sx={{ ...item, ...itemCategory }}>
-          <ListItemButton onClick={() => navigate("/", replace)}>
+          <ListItemButton onClick={() => router.push("/")}>
             <ListItemIcon>
               <Home />
             </ListItemIcon>
@@ -99,12 +107,10 @@ export default function Navigator(props) {
             {children.map(({ id: childId, icon, path }) => (
               <ListItem disablePadding key={childId}>
                 <ListItemButton
-                  selected={selected === childId}
+                  selected={pathname.indexOf(path) !== -1 ? true : false}
+                  component={Link}
+                  to={path}
                   sx={item}
-                  onClick={() => {
-                    setSelected(childId);
-                    navigate(path);
-                  }}
                 >
                   <ListItemIcon>{icon}</ListItemIcon>
                   <ListItemText>{childId}</ListItemText>

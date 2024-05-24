@@ -6,11 +6,11 @@ import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
 import Container from "@mui/material/Container";
 import { createTheme, ThemeProvider } from "@mui/material/styles";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import AuthService from "../services/auth.service";
 import { useLocation, useNavigate } from "react-router-dom";
-import { useDispatch } from "react-redux";
-import { createUser } from "../redux/states/userSlice";
+import { useReduxUsuario } from "../redux/hooks";
+import { useStorageToken } from "../hooks";
 
 function Copyright(props) {
   return (
@@ -34,8 +34,11 @@ function Copyright(props) {
 const defaultTheme = createTheme();
 
 export default function SignIn() {
+  const redux = useReduxUsuario();
+  const token = useStorageToken();
+
   const location = useLocation();
-  const dispatch = useDispatch();
+
   const [errorUsuario, setErrorUsuario] = useState(false);
   const [helpeUsuario, setHelperUsuario] = useState("");
   const [errorPassword, setErrorPassword] = useState(false);
@@ -44,6 +47,13 @@ export default function SignIn() {
   const navigate = useNavigate();
 
   const from = location.state?.from?.pathname || "/";
+
+  //Eliminar login de usuario
+  useEffect(() => {
+    token.remove();
+    redux.reset();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   //Evento del boton
   const handleSubmit = async (event) => {
@@ -67,18 +77,21 @@ export default function SignIn() {
     }
 
     if (response.statusCode === 200) {
-      dispatch(
-        createUser({
-          idUsuario: response.data.id,
-          fullname: response.data.fullname,
-          usuario: response.data.user,
-          rol: response.data.roles,
-          idUnidad: response.data.unidad_relation.id,
-          keyUnidad: response.data.unidad_relation.key,
-          unidad: response.data.unidad_relation.name,
-          accessToken: response.data.accessToken,
-        })
-      );
+      redux.create({
+        idUsuario: response.data.id,
+        fullname: response.data.fullname,
+        usuario: response.data.user,
+        rol: response.data.roles,
+        idUnidad: response.data.unidad_relation.id,
+        keyUnidad: response.data.unidad_relation.key,
+        unidad: response.data.unidad_relation.nombre,
+        foto: response.data.foto,
+      });
+
+      token.setToken({
+        id: response.data.id,
+        accessToken: response.data.accessToken,
+      });
 
       navigate(from, { replace: true });
     }
@@ -120,6 +133,7 @@ export default function SignIn() {
                 margin="normal"
                 required
                 fullWidth
+                autoComplete="current-password"
                 name="password"
                 label="Contraseña"
                 type="password"

@@ -12,13 +12,8 @@ export class TipoDocumentoService {
       order: { nombre: 'ASC' },
     });
 
-    if (result.length) {
-      return {
-        statusCode: HttpStatus.OK,
-        message: 'OK',
-        data: result,
-      };
-    } else {
+    if (result.length) return result;
+    else {
       throw new HttpException(
         'Sin registros que mostrar',
         HttpStatus.NOT_FOUND,
@@ -31,13 +26,8 @@ export class TipoDocumentoService {
       where: { id },
     });
 
-    if (cargo) {
-      return {
-        statusCode: HttpStatus.OK,
-        message: 'OK',
-        data: cargo,
-      };
-    } else {
+    if (cargo) return cargo;
+    else {
       throw new HttpException(
         'Sin registros que mostrar',
         HttpStatus.NOT_FOUND,

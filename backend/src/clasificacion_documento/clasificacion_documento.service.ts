@@ -1,6 +1,6 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { AppDataSource } from 'src/data-source';
-import { ClasificacionDocumento } from '../entities/clasificacion_documento.entity';
+import { Clasificacion } from '../entities/clasificacion.entity';
 import {
   CreateClasificacionDocumentoDto,
   UpdateClasificacionDocumentoDto,
@@ -8,22 +8,16 @@ import {
 
 @Injectable()
 export class ClasificacionDocumentoService {
-  private ClasificacionDocumentoRepository = AppDataSource.getRepository(
-    ClasificacionDocumento,
-  );
+  private ClasificacionDocumentoRepository =
+    AppDataSource.getRepository(Clasificacion);
 
   async findAll() {
     const result = await this.ClasificacionDocumentoRepository.find({
       order: { nombre: 'ASC' },
     });
 
-    if (result.length) {
-      return {
-        statusCode: HttpStatus.OK,
-        message: 'OK',
-        data: result,
-      };
-    } else {
+    if (result.length) return result;
+    else {
       throw new HttpException(
         'Sin registros que mostrar',
         HttpStatus.NOT_FOUND,
@@ -32,17 +26,12 @@ export class ClasificacionDocumentoService {
   }
 
   async findOne(id: string) {
-    const cargo = await this.ClasificacionDocumentoRepository.findOne({
+    const result = await this.ClasificacionDocumentoRepository.findOne({
       where: { id },
     });
 
-    if (cargo) {
-      return {
-        statusCode: HttpStatus.OK,
-        message: 'OK',
-        data: cargo,
-      };
-    } else {
+    if (result) return result;
+    else {
       throw new HttpException(
         'Sin registros que mostrar',
         HttpStatus.NOT_FOUND,
@@ -92,32 +81,32 @@ export class ClasificacionDocumentoService {
   }
 
   async delete(id: string) {
-    const cargo = await this.ClasificacionDocumentoRepository.findOne({
+    /*
+    const result = await this.ClasificacionDocumentoRepository.findOne({
       where: { id },
     });
 
-    if (cargo) {
+    if (result) {
       return {
         statusCode: HttpStatus.OK,
         message: 'OK',
-        data: await this.ClasificacionDocumentoRepository.remove(cargo),
+        data: await this.ClasificacionDocumentoRepository.remove(result),
       };
     }
 
     throw new HttpException(
-      `No se encuentra el área con id ${id}`,
+      `No se encuentra la clasificación con id ${id}`,
       HttpStatus.NOT_FOUND,
     );
+*/
 
-    /*
-    const result = await this.ClasificacionDocumentoRepository.delete(id);    
+    const result = await this.ClasificacionDocumentoRepository.delete(id);
 
-    if (result.affected === 0){
+    if (result.affected === 0) {
       throw new HttpException(
-        `No se encuentra el área con id ${id}`,
+        `No se encuentra la clasificación con id ${id}`,
         HttpStatus.NOT_FOUND,
       );
-      }
-      */
+    }
   }
 }

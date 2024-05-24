@@ -8,6 +8,12 @@ import Navigator from "./Component/Navigator";
 import Header from "./Component/Header";
 import { Navigate, Route, Routes } from "react-router-dom";
 import { RoutesURL } from "./Contants/Routes.contants";
+import Procedencia from "./Pages/procedencia";
+import Destino from "./Pages/destino";
+import TipoDoc from "./Pages/tipoDoc";
+import RoleGuard from "../guards/Rol.guard";
+import { Roles } from "../contants/models.constans";
+import DashboardConfig from "./Pages/DashboardConfig";
 
 function Copyright() {
   return (
@@ -145,18 +151,14 @@ theme = {
 
 const drawerWidth = 256;
 
-const Users = React.lazy(async () => await import("./Pages/Users"));
+const Usuarios = React.lazy(async () => await import("./Pages/usuarios"));
 const Unit = React.lazy(async () => await import("./Pages/unidades"));
-const Areas = React.lazy(async () => await import("./Pages/areas"));
 const Positions = React.lazy(async () => await import("./Pages/cargos"));
 const Specialties = React.lazy(
   async () => await import("./Pages/especialidades")
 );
 const Classification = React.lazy(
   async () => await import("./Pages/clasificacionDoc")
-);
-const OtherEntity = React.lazy(
-  async () => await import("./Pages/otrasEntidades")
 );
 
 export default function Configuration() {
@@ -199,23 +201,36 @@ export default function Configuration() {
           >
             {/*Rutas de contenido*/}
             <Routes>
-              <Route index element={<Navigate to={RoutesURL.USERS} />} />
-              <Route path={RoutesURL.USERS + "/*"} element={<Users />} />
-              <Route path={RoutesURL.UNIDADES + "/*"} element={<Unit />} />
-              <Route path={RoutesURL.AREAS + "/*"} element={<Areas />} />
-              <Route path={RoutesURL.CARGOS + "/*"} element={<Positions />} />
+              <Route index element={<Navigate to="dashboardconfig" />} />
+              <Route path="dashboardconfig" element={<DashboardConfig />} />
+
+              <Route element={<RoleGuard rol={[Roles.SUPER, Roles.ADMIN]} />}>
+                <Route
+                  path={RoutesURL.USUARIOS + "/*"}
+                  element={<Usuarios />}
+                />
+                <Route path={RoutesURL.UNIDADES + "/*"} element={<Unit />} />
+                <Route path={RoutesURL.CARGOS + "/*"} element={<Positions />} />
+                <Route
+                  path={RoutesURL.ESPECIALIDADES + "/*"}
+                  element={<Specialties />}
+                />
+                <Route
+                  path={RoutesURL.DOCCLASIFICACION + "/*"}
+                  element={<Classification />}
+                />
+                <Route
+                  path={RoutesURL.TIPO_DOCUMENTOS + "/*"}
+                  element={<TipoDoc />}
+                />
+              </Route>
+
               <Route
-                path={RoutesURL.ESPECIALIDADES + "/*"}
-                element={<Specialties />}
+                path={RoutesURL.PROCEDENCIA + "/*"}
+                element={<Procedencia />}
               />
-              <Route
-                path={RoutesURL.DOCCLASIFICACION + "/*"}
-                element={<Classification />}
-              />
-              <Route
-                path={RoutesURL.OTRASENTIDADES + "/*"}
-                element={<OtherEntity />}
-              />
+              <Route path={RoutesURL.DESTINO + "/*"} element={<Destino />} />
+
               <Route path="*" element={<div>Página no encontrada</div>} />
             </Routes>
           </Box>

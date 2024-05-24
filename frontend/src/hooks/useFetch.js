@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
-import useAxiosToken from "../hooks/useAxiosToken";
+import useAxiosToken from "./useAxiosToken";
 
 export const useFetch = (url = "") => {
   const [data, setData] = useState([]);
@@ -15,19 +15,12 @@ export const useFetch = (url = "") => {
       .get(url, {
         signal: abortController.signal,
       })
-      .then((response) => {
-        return response?.data.data;
-      })
-      .then((response) => {
-        console.info("response useFetch :>", response);
-        setData(response);
-      })
+      .then((response) => setData(response.data))
       .catch((error) => {
-        console.error(error);
-        if (error.response) {
-          console.error("error :> ", error);
+        console.error("error useFetch :> ", error);
 
-          if (error.response) setError(error?.response?.data?.detail);
+        if (error.response) {
+          if (error.response) setError(error?.response?.data?.message);
 
           if (error.code === "ERR_NETWORK") setError("Servidor no encontrado.");
         }
@@ -35,7 +28,8 @@ export const useFetch = (url = "") => {
       .finally(() => setloading(true));
 
     abortController.abort();
-  }, [axiosToken, url]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [url]);
 
   useEffect(() => {
     fetchData();

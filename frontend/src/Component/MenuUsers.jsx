@@ -15,21 +15,17 @@ import {
   MenuItem,
   Tooltip,
 } from "@mui/material";
-import { replace } from "formik";
-import React, { useEffect, useState } from "react";
-import { useSelector, useDispatch } from "react-redux";
-import { resetUser } from "../redux/states/userSlice";
-import { useNavigate } from "react-router-dom";
+
 import { RoutesURLRoot } from "../contants/routes.constans";
-import { RoutesURL } from "../Configuration/Contants/Routes.contants";
-import api from "../services/axios.service";
+import { useState } from "react";
+import { useReduxUsuario } from "../redux/hooks";
+import { useRouter } from "../hooks";
 
 export default function MenuUsers() {
-  const userState = useSelector((state) => state.user);
-  const dispatch = useDispatch();
-  const navigate = useNavigate();
-  const [anchorElUser, setAnchorElUser] = React.useState(null);
-  const [avatarImg, setAvatarImg] = useState(null);
+  const usuario = useReduxUsuario();
+  const router = useRouter();
+
+  const [anchorElUser, setAnchorElUser] = useState(null);
 
   const handleOpenUserMenu = (event) => {
     setAnchorElUser(event.currentTarget);
@@ -39,40 +35,12 @@ export default function MenuUsers() {
     setAnchorElUser(null);
   };
 
-  //poner avatar si esta presente el la base de datos
-  useEffect(() => {
-    const fetchCurrentAvatar = async () => {
-      let ignore = false;
-      try {
-        const { data } = await api.get(
-          `${RoutesURL.USERS}/${userState.idUsuario}`
-        );
-
-        if (!ignore) {
-          if (data.statusCode === 200) {
-            if (data.data.avatarId) {
-              setAvatarImg(
-                `${RoutesURLRoot.APIURL}/avatar/${data.data.avatarId}`
-              );
-            }
-          }
-        }
-      } catch (error) {
-        console.log(error?.response?.data);
-      } finally {
-        ignore = true;
-      }
-    };
-
-    fetchCurrentAvatar();
-  }, [userState.idUsuario]);
-
   return (
     <Box sx={{ flexGrow: 0 }}>
       <Tooltip title="Menú de Usuario">
         <IconButton onClick={handleOpenUserMenu} sx={{ p: 0 }}>
           {/*Poner imagen de avatar del usuario*/}
-          <Avatar src={avatarImg} />
+          <Avatar src={usuario.list.foto} />
         </IconButton>
       </Tooltip>
       <Menu
@@ -95,20 +63,20 @@ export default function MenuUsers() {
           <ListItemIcon>
             <Person fontSize="small" />
           </ListItemIcon>
-          {userState.fullname}
+          {usuario.list.fullname}
         </MenuItem>
         <MenuItem>
           <ListItemIcon>
             <HomeWork fontSize="small" />
           </ListItemIcon>
-          {userState.unidad}
+          {usuario.list.unidad}
         </MenuItem>
         <Divider />
         {/*Avatar*/}
         <MenuItem
           onClick={() => {
             handleCloseUserMenu();
-            navigate(`/avatar/${userState.idUsuario}`, replace);
+            router.push(`/avatar/${usuario.list.idUsuario}`);
           }}
         >
           <ListItemIcon>
@@ -120,7 +88,7 @@ export default function MenuUsers() {
         <MenuItem
           onClick={() => {
             handleCloseUserMenu();
-            navigate("/config", replace);
+            router.push("/config");
           }}
         >
           <ListItemIcon>
@@ -132,8 +100,7 @@ export default function MenuUsers() {
         <MenuItem
           onClick={() => {
             handleCloseUserMenu();
-            dispatch(resetUser());
-            navigate(`/${RoutesURLRoot.LOGIN}`, { replace: true });
+            router.push(`/${RoutesURLRoot.LOGIN}`);
           }}
         >
           <ListItemIcon>

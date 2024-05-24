@@ -10,12 +10,12 @@ import {
 
 import { Comun } from 'src/common';
 import {
-  Departamentos,
   TrazasOPCI,
   TipoDocumento,
-  ClasificacionDocumento,
   ProcedenciaEntity,
   DestinoEntity,
+  Unidades,
+  Clasificacion,
 } from '.';
 
 @Entity('opci')
@@ -25,7 +25,7 @@ export class RegistroOPCI extends Comun {
 
   @Column({
     type: 'varchar',
-    length: 20,    
+    length: 20,
     default: '',
     nullable: true,
   })
@@ -47,7 +47,7 @@ export class RegistroOPCI extends Comun {
   estado: string;
 
   //Relacion Tipo documento
-  @JoinColumn({ name: 'TipoDocumentoID' })
+  @JoinColumn({ name: 'idTipoDocumento' })
   @ManyToOne(
     () => TipoDocumento,
     (tipoDocumento) => tipoDocumento.idRegistroOPCI,
@@ -59,29 +59,29 @@ export class RegistroOPCI extends Comun {
   public tipodocumento_relation: TipoDocumento;
 
   @Column({ nullable: true })
-  public TipoDocumentoID?: string;
+  public idTipoDocumento?: string;
 
   //Relacion Clasificacion Documento
-  @JoinColumn({ name: 'ClasificacionDocumentoID' })
+  @JoinColumn({ name: 'idClasificacion' })
   @ManyToOne(
-    () => ClasificacionDocumento,
-    (clasificacionDocumento) => clasificacionDocumento.idRegistroOPCI,
+    () => Clasificacion,
+    (clasificacion) => clasificacion.idRegistroOPCI,
     {
       onDelete: 'RESTRICT',
       onUpdate: 'CASCADE',
     },
   )
-  public ClasificacionDocumento_relation: ClasificacionDocumento;
+  public clasificacion_relation: Clasificacion;
 
   @Column({ nullable: true })
-  public ClasificacionDocumentoID?: string;
+  public idClasificacion?: string;
 
   //Relacion de Muchos a Muchos con Departamentos
-  @ManyToMany(() => Departamentos)
+  @ManyToMany(() => Unidades)
   @JoinTable({
-    name: 'opci_departamentos',
+    name: 'opci_departamentos_unidades',
   })
-  departamentos: Departamentos[];
+  unidades: Unidades[];
 
   //Relacion de Muchos a Muchos con Procedencia
   @ManyToMany(() => ProcedenciaEntity, { cascade: true })

@@ -11,89 +11,39 @@ import {
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { RoutesURL } from "../../Configuration/Contants/Routes.contants";
-import api from "../../services/axios.service";
-import axios from "axios";
-import { RoutesURLRoot } from "../../contants";
+import { useBase64 } from "../../hooks/useBase64";
+import useAxiosToken from "./../../hooks/useAxiosToken";
+import { useReduxUsuario } from "../../redux/hooks";
+import { useFetch } from "../../hooks";
 
 export default function Avatar() {
   const { id } = useParams();
-  const [stateAceptar, setStateAceptar] = useState(true);
-  const [avatarImg, setAvatarImg] = useState(null);
-  const [ffile, setFfile] = useState(null);
 
-  const getBase64 = (e) => {
-    setStateAceptar(false);
+  const [avatar, setAvatar] = useState(null);
 
-    setFfile(() => e.target.files);
+  const axiosToken = useAxiosToken();
+
+  const getBase64 = useBase64();
+
+  const redux = useReduxUsuario();
+
+  const { data } = useFetch(`${RoutesURL.USUARIOS}/${id}`);
+
+  useEffect(() => setAvatar(data?.foto), [data?.foto]);
+
+  const CreateAvatar = (event) => {
+    getBase64(event.target.files[0]).then((response) => {
+      setAvatar(response);
+    });
   };
 
-  //poner avatar si esta presente el la base de datos
-  useEffect(() => {
-    const fetchCurrentAvatar = async () => {
-      let ignore = false;
-      try {
-        const { data } = await api.get(`${RoutesURL.USERS}/${id}`);
-
-        if (!ignore) {
-          if (data.statusCode === 200) {
-            if (data.data.avatarId) {
-              setAvatarImg(
-                `${RoutesURLRoot.APIURL}/avatar/${data.data.avatarId}`
-              );
-            }
-          }
-        }
-      } catch (error) {
-        console.log(error?.response?.data);
-      } finally {
-        ignore = true;
-      }
-    };
-
-    fetchCurrentAvatar();
-  }, [id]);
-
-  //poner avatar si se carga en el input
-  useEffect(() => {
-    if (ffile) {
-      let reader = new FileReader();
-      reader.readAsDataURL(ffile[0]);
-      reader.onload = () => {
-        setAvatarImg(() => reader.result);
-      };
-      reader.onerror = function (error) {
-        console.log("Error: ", error);
-      };
-    }
-  }, [ffile]);
-
-  const fetchUsuario = async () => {
-    let ignore = false;
-    try {
-      if (!ignore) {
-        let fileFormData = new FormData();
-        fileFormData.append("file", ffile[0], ffile[0].name);
-
-        await axios.post(
-          `${RoutesURLRoot.APIURL}/users/avatar/${id}`,
-          fileFormData,
-          {
-            Headers: {
-              "Content-Type": "multipart/form-data",
-            },
-          }
-        );
-      }
-    } catch (error) {
-      console.log(error?.response?.data);
-    } finally {
-      ignore = true;
-      setStateAceptar(true);
-    }
-  };
-
-  const AddAvatar = () => {
-    fetchUsuario();
+  const PostAvatar = () => {
+    axiosToken
+      .put(`${RoutesURL.USUARIOS}/${id}`, { foto: avatar })
+      .then(() => {
+        redux.update({ foto: avatar });
+      })
+      .catch((error) => console.error(error));
   };
 
   return (
@@ -104,7 +54,7 @@ export default function Avatar() {
           component="img"
           height="400"
           width="200"
-          image={avatarImg}
+          image={avatar}
           alt="Avatar"
         />
         <CardContent>
@@ -121,12 +71,12 @@ export default function Avatar() {
           inputProps={{
             accept: "image/png, image/jpeg",
           }}
-          onChange={getBase64}
+          onChange={CreateAvatar}
         />
         <Button
           variant="contained"
-          disabled={stateAceptar}
-          onClick={() => AddAvatar()}
+          disabled={!avatar}
+          onClick={() => PostAvatar()}
           sx={{ width: "100px" }}
         >
           Aceptar

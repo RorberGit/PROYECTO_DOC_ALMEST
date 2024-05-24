@@ -1,8 +1,15 @@
-import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
+import {
+  ForbiddenException,
+  HttpException,
+  HttpStatus,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { CreateProcedenciaDto } from './dto/create-procedencia.dto';
 import { UpdateProcedenciaDto } from './dto/update-procedencia.dto';
 import { AppDataSource } from 'src/data-source';
 import { ProcedenciaEntity } from 'src/entities';
+import { MESSAGE_ERROR } from 'src/common/constantes.const';
 
 @Injectable()
 export class ProcedenciaService {
@@ -11,12 +18,12 @@ export class ProcedenciaService {
 
   async create(createProcedenciaDto: CreateProcedenciaDto) {
     try {
-      const cargo = this.ProcedenciaRepository.create(createProcedenciaDto);
+      const result = this.ProcedenciaRepository.create(createProcedenciaDto);
 
       return {
         statusCode: HttpStatus.OK,
         message: 'OK',
-        data: await this.ProcedenciaRepository.save(cargo),
+        data: await this.ProcedenciaRepository.save(result),
       };
     } catch (error) {
       throw new HttpException(
@@ -32,12 +39,9 @@ export class ProcedenciaService {
 
   async findAll() {
     try {
-      return {
-        statusCode: HttpStatus.OK,
-        data: await this.ProcedenciaRepository.find({
-          order: { nombre: 'ASC' },
-        }),
-      };
+      return await this.ProcedenciaRepository.find({
+        order: { nombre: 'ASC' },
+      });
     } catch (error) {
       throw new HttpException(
         {
@@ -50,15 +54,59 @@ export class ProcedenciaService {
     }
   }
 
-  findOne(id: number) {
-    return `This action returns a #id procedencia`;
+  async findOne(id: string) {
+    try {
+      return await this.ProcedenciaRepository.findOne({
+        where: { id },
+        order: { nombre: 'ASC' },
+      });
+    } catch (error) {
+      throw new HttpException(
+        {
+          status: HttpStatus.FORBIDDEN,
+          error: 'Error al obtener el registro',
+          cause: error,
+        },
+        HttpStatus.FORBIDDEN,
+      );
+    }
   }
 
-  update(id: number, updateProcedenciaDto: UpdateProcedenciaDto) {
-    return `This action updates a #id procedencia`;
+  async update(id: string, updateProcedenciaDto: UpdateProcedenciaDto) {
+    try {
+      const preload = {
+        id,
+        ...updateProcedenciaDto,
+      };
+
+      const result = await this.ProcedenciaRepository.preload(preload);
+
+      if (result) {
+        return {
+          statusCode: HttpStatus.OK,
+          data: await this.ProcedenciaRepository.save(result),
+        };
+      } else {
+        throw new NotFoundException(MESSAGE_ERROR.NOT_FOUND);
+      }
+    } catch (error) {
+      throw new ForbiddenException({
+        error: MESSAGE_ERROR.UPDATE,
+        cause: error,
+      });
+    }
   }
 
-  remove(id: number) {
-    return `This action removes a #id procedencia`;
+  async remove(id: string) {
+    const result = await this.ProcedenciaRepository.findOne({ where: { id } });
+
+    if (result) {
+      return {
+        statusCode: HttpStatus.OK,
+        data: await this.ProcedenciaRepository.remove(result),
+      };
+    }
+
+    throw new NotFoundException(MESSAGE_ERROR.NOT_FOUND);
   }
 }

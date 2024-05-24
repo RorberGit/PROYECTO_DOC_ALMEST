@@ -3,6 +3,7 @@ import { RegistroDoc, Territorios, Usuarios, Flujo, TrazasOPCI } from '.';
 import { Column, Entity, JoinColumn, ManyToOne, OneToMany } from 'typeorm';
 import { Comun } from 'src/common';
 
+//Unidades o Departamentos
 @Entity('unidades')
 export class Unidades extends Comun {
   @Column({ type: 'varchar', length: 60, default: '', unique: true })

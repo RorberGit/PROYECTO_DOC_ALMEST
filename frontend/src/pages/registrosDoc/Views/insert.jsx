@@ -6,29 +6,28 @@ import {
   CircularProgress,
   TextField,
 } from "@mui/material";
-import { Formik, replace } from "formik";
+import { Formik } from "formik";
 import * as yup from "yup";
 import Titles from "../../../Component/Titles";
 
-import api from "../../../services/axios.service";
 import { RoutesURLRoot } from "../../../contants";
 
-import { useNavigate } from "react-router-dom";
 import { useShowMessage } from "../../../hooks/useShowMessage";
 import { useEffect, useState } from "react";
 
 import { useSelector } from "react-redux";
 import { RoutesURL } from "../../../Configuration/Contants/Routes.contants";
-import axios from "axios";
 
 //import bunyan from "bunyan";
+import axios from "./../../../api/axios";
+import { useRouter } from "../../../hooks/use-router";
 
 export default function Insert() {
   const [isLoading, setIsLoading] = useState(true);
 
   const user = useSelector((state) => state.user);
 
-  const navigate = useNavigate();
+  const router = useRouter();
   const [Message] = useShowMessage();
 
   const [clasificacion, setClasificacion] = useState([]);
@@ -40,8 +39,8 @@ export default function Insert() {
     const fetchData = async () => {
       try {
         const [clasificacionResult, unidadesResult] = await Promise.all([
-          api.get(RoutesURL.DOCCLASIFICACION),
-          api.get(RoutesURL.UNIDADES),
+          axios.get(RoutesURL.DOCCLASIFICACION),
+          axios.get(RoutesURL.UNIDADES),
         ]);
 
         const clasificacionValue = clasificacionResult.data.data;
@@ -92,7 +91,7 @@ export default function Insert() {
 
   const getConscData = async (idUnidad, year) => {
     try {
-      const response = await api.get(
+      const response = await axios.get(
         `${RoutesURLRoot.REGISTROS}/${idUnidad}/${year}`
       );
       return response.data;
@@ -140,7 +139,7 @@ export default function Insert() {
       const conscData = await getConscData(idUnidad, year);
       const registro = createRegistro(values, user, conscData);
 
-      const result = await api.post(RoutesURLRoot.REGISTROS, registro);
+      const result = await axios.post(RoutesURLRoot.REGISTROS, registro);
 
       if (result.data.statusCode === 200) {
         if (values.file) {
@@ -163,7 +162,7 @@ export default function Insert() {
         }
 
         Message(`Registro agregado exitosamente`, "success");
-        navigate(`/${RoutesURLRoot.REGISTROS}`, replace);
+        router.push(`/${RoutesURLRoot.REGISTROS}`);
       } else {
         Message(`Error: ${result?.data?.message}`, "error");
       }

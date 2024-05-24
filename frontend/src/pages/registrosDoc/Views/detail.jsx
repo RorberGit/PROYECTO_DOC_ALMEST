@@ -10,14 +10,14 @@ import {
 } from "@mui/material";
 import { useState } from "react";
 
-import { useResultAPI } from "../../../hooks/useResultAPI";
 import { FormatDate } from "../../../utilities";
 import { RoutesURLRoot } from "../../../contants/routes.constans";
+import { useFetch } from "../../../hooks";
 
 export default function Detail() {
   const [isLoading, setIsLoading] = useState(false);
   const { id } = useParams();
-  const [data] = useResultAPI(`${RoutesURLRoot.REGISTROS}/regi/${id}`);
+  const { data } = useFetch(`${RoutesURLRoot.REGISTROS}/regi/${id}`);
 
   const [prev, setPrev] = useState([]);
 

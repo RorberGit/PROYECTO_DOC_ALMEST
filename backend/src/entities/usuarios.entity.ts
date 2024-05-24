@@ -1,21 +1,11 @@
+import { Column, Entity, JoinColumn, ManyToOne, OneToMany } from 'typeorm';
+import { DeletedENUM } from '../usuarios/enum/users.enum';
 import {
-  Column,
-  Entity,
-  JoinColumn,
-  ManyToOne,
-  OneToMany,
-  OneToOne,
-} from 'typeorm';
-import { DeletedENUM, RolesENUM } from '../usuarios/enum/users.enum';
-import {
-  Areas,
   Cargos,
   Especialidades,
   RegistroDoc,
   Unidades,
-  Avatar,
   Firmantes,
-  Departamentos,
   TrazasOPCI,
 } from '.';
 
@@ -43,11 +33,11 @@ export class Usuarios extends Comun {
   email: string;
 
   @Column({
-    type: 'enum',
-    enum: RolesENUM,
-    default: RolesENUM.EJECUTOR,
+    length: 30,
+    default: '',
+    nullable: true,
   })
-  roles: RolesENUM; //enum SI y NO
+  roles: string; //enum SI y NO
 
   @Column({
     type: 'enum',
@@ -55,13 +45,6 @@ export class Usuarios extends Comun {
     default: DeletedENUM.NO,
   })
   deleted: DeletedENUM; //enum SI y NO
-
-  @Column({ nullable: true })
-  idarea: string;
-
-  @ManyToOne(() => Areas, (area) => area.users)
-  @JoinColumn({ name: 'idarea' })
-  area_relation: Areas;
 
   @Column({ nullable: true })
   idcargo: string;
@@ -75,7 +58,7 @@ export class Usuarios extends Comun {
 
   @ManyToOne(() => Especialidades, (especialidad) => especialidad.users)
   @JoinColumn({ name: 'idespecialidad' })
-  especialidad_relation: Especialidades; 
+  especialidad_relation: Especialidades;
 
   @Column({ nullable: true })
   idunidad: string;
@@ -84,33 +67,18 @@ export class Usuarios extends Comun {
   @JoinColumn({ name: 'idunidad' })
   unidad_relation: Unidades;
 
-  @JoinColumn({ name: 'DepartamentoID' })
-  @ManyToOne(() => Departamentos, (departamentos) => departamentos.UsuarioID)
-  public departamento_relation: Departamentos;
-
-  @Column({ nullable: true })
-  DepartamentoID: string;
-
   @OneToMany(() => RegistroDoc, (registro) => registro.idUsuario)
-  idRegistroDoc: RegistroDoc[];
-
-  @JoinColumn({ name: 'avatarId' })
-  @OneToOne(() => Avatar, {
-    nullable: true,
-    cascade: ['update'],
-    onDelete: 'CASCADE'
-  })
-  public avatar?: Avatar;
-
-  @Column({ nullable: true })
-  public avatarId?: string;
+  public idRegistroDoc?: RegistroDoc[];
 
   @OneToMany(() => Firmantes, (firmantes) => firmantes.usuario_relation)
-  idFirmantes: Firmantes[];
+  idFirmantes?: Firmantes[];
 
   @Column({ default: '' })
   refreshToken: string;
 
   @OneToMany(() => TrazasOPCI, (trazasOPCI) => trazasOPCI.usuario_relation)
   trazasOpciId: TrazasOPCI[];
+
+  @Column({ type: 'text', nullable: true, default: '' })
+  public foto?: string;
 }

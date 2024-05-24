@@ -1,11 +1,11 @@
 import { RoutesURLRoot } from "../contants";
-import { api } from ".";
+import axios from "../api/axios";
 
 const DataFetching = async (idUsuario) => {
   let flujo = [];
   let convert = [];
 
-  const firmantes = await api.get(
+  const firmantes = await axios.get(
     `${RoutesURLRoot.FIRMANTES}/user/${idUsuario}`
   );
 
@@ -28,7 +28,7 @@ const DataFetching = async (idUsuario) => {
           });
 
           /**Consulta a la tabla registro para buscar coincidencias*/
-          const registros = await api.get(`${url}?${params}`);
+          const registros = await axios.get(`${url}?${params}`);
 
           if (registros.data.statusCode === 200) {
             const registro = registros.data.data;

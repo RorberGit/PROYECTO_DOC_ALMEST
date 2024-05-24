@@ -7,7 +7,7 @@ import {
 import { AppDataSource } from 'src/data-source';
 
 import {
-  Departamentos,
+  Unidades,
   RegistroOPCI,
   ProcedenciaEntity,
   DestinoEntity,
@@ -21,27 +21,24 @@ export class RegistroOPCiService {
   private RegistroOPCIRepo = AppDataSource.getRepository(RegistroOPCI);
   private Procedencia = AppDataSource.getRepository(ProcedenciaEntity);
   private Destino = AppDataSource.getRepository(DestinoEntity);
-  private DepartamentosRepo = AppDataSource.getRepository(Departamentos);
+  private UnidadesRepo = AppDataSource.getRepository(Unidades);
 
   //Obtener todos los registros------------------------------------------------------------
   async findAll() {
     const response = await this.RegistroOPCIRepo.find({
       relations: {
-        ClasificacionDocumento_relation: true,
+        clasificacion_relation: true,
         tipodocumento_relation: true,
         procedencia: true,
         destino: true,
-        departamentos: true,
+        unidades: true,
         trazasOpciId: true,
       },
       order: { conteo: 'DESC' },
     });
 
     if (response.length) {
-      return {
-        statusCode: HttpStatus.OK,
-        data: response,
-      };
+      return response;
     } else {
       throw new NotFoundException(MESSAGE_ERROR.NOT_FOUND);
     }
@@ -52,9 +49,9 @@ export class RegistroOPCiService {
     const response = await this.RegistroOPCIRepo.findOne({
       where: { id },
       relations: {
-        ClasificacionDocumento_relation: true,
+        clasificacion_relation: true,
         tipodocumento_relation: true,
-        departamentos: true,
+        unidades: true,
         procedencia: true,
         destino: true,
         trazasOpciId: {
@@ -64,12 +61,36 @@ export class RegistroOPCiService {
       },
     });
 
-    if (response) {
-      return {
-        statusCode: HttpStatus.OK,
-        data: response,
-      };
-    } else {
+    if (response) return response;
+    else {
+      throw new NotFoundException(MESSAGE_ERROR.NOT_FOUND);
+    }
+  }
+
+  //Buscar un departamento---------------------------------------------------------------
+  async findByOffice(nombre: string) {
+    const response = await this.RegistroOPCIRepo.find({
+      where: {
+        unidades: {
+          nombre: nombre,
+        },
+      },
+      relations: {
+        clasificacion_relation: true,
+        tipodocumento_relation: true,
+        unidades: true,
+        procedencia: true,
+        destino: true,
+        trazasOpciId: {
+          usuario_relation: true,
+          unidad_relation: true,
+        },
+      },
+      order: { conteo: 'DESC' },
+    });
+
+    if (response) return response;
+    else {
       throw new NotFoundException(MESSAGE_ERROR.NOT_FOUND);
     }
   }
@@ -105,19 +126,19 @@ export class RegistroOPCiService {
         );
 
       //Departamentos
-      const objDepartamentos = await this.DepartamentosRepo.findBy({
-        id: In(body.departamentos),
+      const Unidades = await this.UnidadesRepo.findBy({
+        id: In(body.unidades),
       });
-      if (objDepartamentos.length === 0)
+      if (Unidades.length === 0)
         throw new NotFoundException(
-          `Departamentos con id's ${objDepartamentos} no encontrado`,
+          `Unidades con id's ${Unidades} no encontrado`,
         );
 
       const insertRegistro = {
         ...body,
         procedencia: Procedencia,
         destino: Destino,
-        departamentos: objDepartamentos,
+        unidades: Unidades,
       };
 
       const result = this.RegistroOPCIRepo.create(insertRegistro);
@@ -144,8 +165,8 @@ export class RegistroOPCiService {
       const preloadBody = {
         id,
         ...body,
-        departamentos: await this.DepartamentosRepo.findBy({
-          id: In(body.departamentos),
+        unidades: await this.UnidadesRepo.findBy({
+          id: In(body.unidades),
         }),
         procedencia: await this.Procedencia.findBy({
           id: In(body.procedencia),

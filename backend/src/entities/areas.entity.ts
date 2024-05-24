@@ -16,9 +16,6 @@ export class Areas {
   @Column({ type: 'varchar', length: 60, default: '', unique: true })
   nombre: string;
 
-  @OneToMany(() => Usuarios, (usuarios) => usuarios.idarea)
-  users: Usuarios[];
-
   @CreateDateColumn({ type: 'timestamp' })
   createdDate: Date;
 

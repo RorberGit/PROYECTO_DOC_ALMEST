@@ -2,7 +2,7 @@ export * from './aprobaciones.entity';
 export * from './areas.entity';
 export * from './avatar.entity';
 export * from './cargos.entity';
-export * from './clasificacion_documento.entity';
+export * from './clasificacion.entity';
 export * from './departamentos.entity';
 export * from './destino.entity';
 export * from './especialidades.entity';

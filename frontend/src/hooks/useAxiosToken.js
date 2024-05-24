@@ -1,10 +1,11 @@
 import { useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { getToken } from "../utilities";
 import { axiosToken } from "../api/axios";
+import { useStorageToken } from "./use-StorageToken";
+import { RoutesURLRoot } from "../contants";
 
 const useAxiosToken = () => {
-  const token = getToken("user");
+  const token = useStorageToken();
 
   const navigate = useNavigate();
   const location = useLocation();
@@ -12,9 +13,9 @@ const useAxiosToken = () => {
   useEffect(() => {
     const requestIntercept = axiosToken.interceptors.request.use(
       (config) => {
-        if (token?.access_token) {
-          config.headers["Authorization"] = `Bearer ${token?.access_token}`;
-          console.info("Config :> ", config);
+        if (token?.accessToken) {
+          config.headers["Authorization"] = `Bearer ${token?.accessToken}`;
+          console.info("Request :> ", config);
         }
         return config;
       },
@@ -23,6 +24,7 @@ const useAxiosToken = () => {
 
     const responseIntercept = axiosToken.interceptors.response.use(
       (response) => {
+        console.info("Response :> ", response);
         return response;
       },
       async (error) => {
@@ -34,11 +36,37 @@ const useAxiosToken = () => {
           prevRequest.sent = true;
           //const newAccessToken = await refresh();
           //prevRequest.headers["Authorization"] = `Bearer ${newAccessToken}`;
+
+          /*
+    
+    const originalConfig = err.config;
+
+    if (err.response.status === 401) {
+
+      originalConfig._retry = true;
+
+      try {
+        const rs = await instance.post("/auth/refreshtoken", {
+          refreshToken: TokenService.getLocalRefreshToken(),
+        });
+
+        const { accessToken } = rs.data;
+        TokenService.updateLocalAccessToken(accessToken);
+
+        return instance(originalConfig);
+      } catch (_error) {
+        return Promise.reject(_error);
+      }
+    }
+*/
           return axiosToken(prevRequest);
         }
 
         if (error?.response?.status === 401) {
-          navigate("/#/signin", { state: { from: location }, replace: true });
+          navigate(`/${RoutesURLRoot.LOGIN}`, {
+            state: { from: location },
+            replace: true,
+          });
         }
 
         return Promise.reject(error);
@@ -49,7 +77,8 @@ const useAxiosToken = () => {
       axiosToken.interceptors.request.eject(requestIntercept);
       axiosToken.interceptors.response.eject(responseIntercept);
     };
-  }, [location, navigate, token]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   return axiosToken;
 };

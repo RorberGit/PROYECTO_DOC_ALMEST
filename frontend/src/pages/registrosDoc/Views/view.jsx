@@ -9,11 +9,8 @@ import {
   createTheme,
 } from "@mui/material";
 
-import { useNavigate } from "react-router-dom";
-
 import { DataGrid, GridToolbar, esES } from "@mui/x-data-grid";
 
-import api from "../../../services/axios.service";
 import { Delete, Visibility } from "@mui/icons-material";
 
 import { messageAlert } from "../../../utilities";
@@ -24,6 +21,8 @@ import { RoutesURLRoot } from "../../../contants/routes.constans";
 
 import { useEffect, useRef, useState } from "react";
 import { useSelector } from "react-redux";
+import axios from "../../../api/axios";
+import { useRouter } from "../../../hooks";
 
 const theme = createTheme(
   {
@@ -37,7 +36,7 @@ const theme = createTheme(
 export default function View() {
   const [isLoading, setIsLoading] = useState(false);
   const { idUnidad } = useSelector((state) => state.user);
-  const navigate = useNavigate();
+  const router = useRouter();
   const [Message] = useShowMessage();
   const [datareg, setDataReg] = useState([]);
 
@@ -49,7 +48,7 @@ export default function View() {
     const fetchRegistros = async () => {
       ignore.current = false;
       try {
-        const result = await api.get(
+        const result = await axios.get(
           `${RoutesURLRoot.REGISTROS}/unit/${idUnidad}`
         );
 
@@ -95,7 +94,7 @@ export default function View() {
   const deleteRow = async (id) => {
     messageAlert().then(async (result) => {
       if (result.isConfirmed) {
-        api
+        axios
           .delete(`/${RoutesURLRoot.REGISTROS}/${id}`)
           .then((result) => {
             if (result.data.statusCode === 200) {
@@ -124,7 +123,7 @@ export default function View() {
             <IconButton
               color="info"
               onClick={() =>
-                navigate(`${RoutesURLRoot.DETAIL}/${params.row.id}`)
+                router.pust(`${RoutesURLRoot.DETAIL}/${params.row.id}`)
               }
             >
               <Visibility />
@@ -155,7 +154,7 @@ export default function View() {
           <Button
             size="small"
             variant="contained"
-            onClick={() => navigate(RoutesURLRoot.INSERT)}
+            onClick={() => router.push(RoutesURLRoot.INSERT)}
           >
             CREAR NUEVO REGISTRO
           </Button>

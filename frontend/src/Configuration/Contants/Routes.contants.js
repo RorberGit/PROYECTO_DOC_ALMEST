@@ -1,14 +1,14 @@
 export const RoutesURL = {
   ROOT: "config",
-  UNIDADES: "units",
-  AREAS: "areas",
+  UNIDADES: "units",  
   CARGOS: "positions",
   ESPECIALIDADES: "specialties",
   DOCCLASIFICACION: "classification",
-  OTRASENTIDADES: "otherentity",
-  USERS: "users",
-  VIEW: "view",
-  INSERT: "insert",
-  EDIT: "edit",
+  TIPO_DOCUMENTOS: "type",
+  PROCEDENCIA: "origin",
+  DESTINO: "destiny",
+  USUARIOS: "users",
+  VIEW: "view",  
   DETAIL: "detail",
+  FORMULARIO: 'form'
 };

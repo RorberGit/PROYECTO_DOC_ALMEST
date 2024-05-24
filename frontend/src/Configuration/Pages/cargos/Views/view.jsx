@@ -1,95 +1,85 @@
-import {
-  Backdrop,
-  Box,
-  Button,
-  CircularProgress,
-  IconButton,
-  ThemeProvider,
-  Tooltip,
-} from "@mui/material";
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { Backdrop, Box, Button, CircularProgress } from "@mui/material";
+import { useCallback, useEffect, useMemo, useState } from "react";
 
-import { DataGrid, GridToolbar } from "@mui/x-data-grid";
-import api from "../../../../services/axios.service";
+import { GridActionsCellItem } from "@mui/x-data-grid";
+
 import { Delete, Edit, Visibility } from "@mui/icons-material";
 import Titles from "../../../Component/Titles";
 import { RoutesURL } from "../../../Contants/Routes.contants";
 import { messageAlert } from "../../../../utilities";
 import { useShowMessage } from "../../../../hooks/useShowMessage";
-import { theme } from "../../../../contants/global.constans";
-import { useResultAPI } from "../../../../hooks/useResultAPI";
+import Tabla from "../../../../Component/mui/Tabla";
+import { Link } from "react-router-dom";
+import useAxiosToken from "../../../../hooks/useAxiosToken";
+import { useFetch } from "../../../../hooks/useFetch";
 
 export default function View() {
-  const [isLoading, setIsLoading] = useState(false);
-  const navigate = useNavigate();
+  const [data, setData] = useState(null);
+
   const [Message] = useShowMessage();
 
-  const [data, setData] = useResultAPI(RoutesURL.CARGOS);
+  const axiosToken = useAxiosToken();
 
-  if (!isLoading) {
-    setTimeout(() => {
-      setIsLoading(() => true);
-    }, 200);
-  }
+  const cargos = useFetch(RoutesURL.CARGOS);
 
-  const deleteRow = async (id) => {
-    messageAlert().then(async (result) => {
-      if (result.isConfirmed) {
-        api
-          .delete(`${RoutesURL.CARGOS}/${id}`)
-          .then((result) => {
-            if (result.data.statusCode === 200) {
+  useEffect(() => {
+    setData(cargos.data);
+  }, [cargos.data]);
+
+  const deleteRow = useCallback(
+    (id) => () => {
+      messageAlert().then((result) => {
+        if (result.isConfirmed) {
+          axiosToken
+            .delete(`${RoutesURL.CARGOS}/${id}`)
+            .then(() => {
+              setData((prevRows) => prevRows.filter((row) => row.id !== id));
               Message("Registro eliminado exitosamente", "success");
-              setTimeout(() => {
-                setData((prevRows) => prevRows.filter((row) => row.id !== id));
-              });
-            } else console.log(result);
-          })
-          .catch((error) => {
-            Message(error.response.data.message, "error");
-          });
-      }
-    });
-  };
-
-  const columns = [
-    {
-      field: "action",
-      headerName: "",
-      width: 130,
-      sortable: false,
-      renderCell: (params) => (
-        <>
-          <Tooltip placement="top" title="Detalles">
-            <IconButton
-              color="info"
-              onClick={() => navigate(`${RoutesURL.DETAIL}/${params.row.id}`)}
-            >
-              <Visibility />
-            </IconButton>
-          </Tooltip>
-          <Tooltip placement="top" title="Editar">
-            <IconButton
-              color="warning"
-              onClick={() => navigate(`${RoutesURL.EDIT}/${params.row.id}`)}
-            >
-              <Edit />
-            </IconButton>
-          </Tooltip>
-          <Tooltip placement="top" title="Eliminar">
-            <IconButton color="error" onClick={() => deleteRow(params.id)}>
-              <Delete />
-            </IconButton>
-          </Tooltip>
-        </>
-      ),
+            })
+            .catch((error) => {
+              Message(error.response.data.message, "error");
+            });
+        }
+      });
     },
-    { field: "id", headerName: "ID" },
-    { field: "cargos", headerName: "Cargos", width: 300 },
-  ];
+    [Message, axiosToken]
+  );
 
-  return isLoading ? (
+  const columns = useMemo(
+    () => [
+      {
+        field: "actions",
+        type: "actions",
+        width: 120,
+        getActions: (params) => [
+          <GridActionsCellItem
+            key={1}
+            icon={<Visibility color="info" />}
+            label="Datail"
+            component={Link}
+            to={`${RoutesURL.DETAIL}/${params.row.id}`}
+          />,
+          <GridActionsCellItem
+            key={2}
+            icon={<Edit color="warning" />}
+            label="Edit"
+            component={Link}
+            to={`${RoutesURL.FORMULARIO}?action=update&id=${params.row.id}`}
+          />,
+          <GridActionsCellItem
+            key={3}
+            icon={<Delete color="error" />}
+            label="Delete"
+            onClick={deleteRow(params.id)}
+          />,
+        ],
+      },
+      { field: "nombre", headerName: "Cargos", width: 300 },
+    ],
+    [deleteRow]
+  );
+
+  return cargos.loading ? (
     <>
       <Titles title="Cargos" />
       <Box m={2}>
@@ -97,41 +87,21 @@ export default function View() {
           <Button
             size="small"
             variant="contained"
-            onClick={() => navigate(RoutesURL.INSERT)}
+            component={Link}
+            to={`${RoutesURL.FORMULARIO}?action=create`}
           >
             CREAR NUEVO CARGO
           </Button>
         </Box>
         <Box>
-          <ThemeProvider theme={theme}>
-            <DataGrid
-              rows={data}
-              columns={columns}
-              slots={{ toolbar: GridToolbar }}
-              slotProps={{
-                toolbar: {
-                  showQuickFilter: true,
-                },
-              }}
-              autoHeight
-              initialState={{
-                columns: {
-                  columnVisibilityModel: {
-                    id: false,
-                    createdDate: false,
-                    updatedDate: false,
-                  },
-                },
-              }}
-            />
-          </ThemeProvider>
+          <Tabla rows={data} columns={columns} />
         </Box>
       </Box>
     </>
   ) : (
     <Backdrop
       sx={{ color: "#fff", zIndex: (theme) => theme.zIndex.drawer + 1 }}
-      open={!isLoading}
+      open={!cargos.loading}
     >
       <CircularProgress color="inherit" />
     </Backdrop>

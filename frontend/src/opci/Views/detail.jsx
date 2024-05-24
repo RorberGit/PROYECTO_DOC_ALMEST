@@ -12,16 +12,16 @@ import {
 
 import { FormatDate } from "../../utilities";
 import { RoutesURLRoot } from "../../contants/routes.constans";
-import { FetchID } from "../Utilities";
 
 import { v4 as uuid } from "uuid";
 
 import PropTypes from "prop-types";
+import { useFetch } from './../../hooks/useFetch';
 
 export default function Detail() {
   const { id } = useParams();
 
-  const { data, loading, error } = FetchID(`${RoutesURLRoot.OPCI}/find/${id}`);
+  const { data, loading, error } = useFetch(`${RoutesURLRoot.OPCI}/find/${id}`);
 
   console.log("data :>> ", data);
 
@@ -49,7 +49,7 @@ export default function Detail() {
           </Typography>
           <Typography>
             <b>Clasificación:</b>{" "}
-            {data?.ClasificacionDocumento_relation?.nombre}
+            {data?.clasificacion_relation?.nombre}
           </Typography>
           <Typography>
             <b>Asunto:</b> {data?.descripcion}
@@ -89,7 +89,7 @@ export default function Detail() {
               <b>Visto en áreas:</b>
             </Typography>
             <Box>
-              {data?.departamentos.map((item) => (
+              {data?.unidades.map((item) => (
                 <Typography marginLeft="5px" key={item.id}>
                   {item.nombre}
                 </Typography>

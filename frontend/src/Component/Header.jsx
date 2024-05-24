@@ -6,21 +6,21 @@ import {
   Badge,
   Box,
   IconButton,
-  Link,
   Stack,
   Toolbar,
   Tooltip,
 } from "@mui/material";
 
 import MenuUsers from "./MenuUsers";
-import { Link as LinkRouter, NavLink, useNavigate } from "react-router-dom";
+import { NavLink } from "react-router-dom";
 import { RoutesURLRoot } from "../contants/routes.constans";
-import { replace } from "formik";
 import { useSelector } from "react-redux";
+import { useRouter } from "../hooks";
 
 export default function Header() {
   const flujoState = useSelector((state) => state.flujo);
-  const navigate = useNavigate();
+
+  const router = useRouter();
 
   return (
     <>
@@ -34,7 +34,7 @@ export default function Header() {
                 color="inherit"
                 aria-label="menu"
                 sx={{ mr: 2 }}
-                onClick={() => navigate(RoutesURLRoot.ROOT, replace)}
+                onClick={() => router.push(RoutesURLRoot.ROOT)}
               >
                 <Home />
               </IconButton>

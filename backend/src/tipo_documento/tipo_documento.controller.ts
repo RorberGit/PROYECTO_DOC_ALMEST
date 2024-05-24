@@ -11,7 +11,9 @@ import { TipoDocumentoService } from './tipo_documento.service';
 import { ApiTags } from '@nestjs/swagger';
 import { CreateTipoDocumentoDto } from './dto/create-tipo_documento.dto';
 import { UpdateTipoDocumentoDto } from './dto/update-tipo_documento.dto';
+import { Auth } from 'src/common';
 
+@Auth()
 @ApiTags('Tipo de Documentos')
 @Controller('type')
 export class TipoDocumentoController {

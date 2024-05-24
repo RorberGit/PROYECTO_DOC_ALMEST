@@ -11,6 +11,7 @@ export default function CampoTexto(props) {
     touched,
     errors,
     ncol,
+    type,
     multiline,
     rows,
   } = props;
@@ -19,6 +20,7 @@ export default function CampoTexto(props) {
     <>
       <TextField
         name={name}
+        type={type ? type : "text"}
         size="small"
         variant="outlined"
         label={label}
@@ -44,6 +46,7 @@ CampoTexto.propTypes = {
   touched: PropTypes.bool,
   errors: PropTypes.string,
   ncol: PropTypes.string,
+  type: PropTypes.string,
   multiline: PropTypes.bool,
   rows: PropTypes.number,
 };

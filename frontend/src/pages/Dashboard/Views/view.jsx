@@ -2,6 +2,7 @@ import { Box, Card, CardHeader, Stack, Typography } from "@mui/material";
 import { useSelector } from "react-redux";
 import { RoutesURLRoot } from "../../../contants";
 import { Link } from "react-router-dom";
+import PropTypes from "prop-types";
 import { v4 as uuid } from "uuid";
 
 export default function View() {
@@ -67,3 +68,7 @@ function NewItem({ docs }) {
     </Stack>
   );
 }
+
+NewItem.propTypes = {
+  docs: PropTypes.object,
+};

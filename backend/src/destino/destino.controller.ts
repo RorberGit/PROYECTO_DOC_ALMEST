@@ -4,13 +4,17 @@ import {
   Delete,
   Get,
   Param,
-  Patch,
   Post,
+  Put,
 } from '@nestjs/common';
 import { CreateDestinoDto } from './dto/create-destino.dto';
 import { UpdateDestinoDto } from './dto/update-destino.dto';
 import { DestinoService } from './destino.service';
+import { ApiTags } from '@nestjs/swagger';
+import { Auth } from 'src/common';
 
+@Auth()
+@ApiTags('Destinos')
 @Controller('destiny')
 export class DestinoController {
   constructor(private readonly destinoService: DestinoService) {}
@@ -27,16 +31,16 @@ export class DestinoController {
 
   @Get(':id')
   findOne(@Param('id') id: string) {
-    return this.destinoService.findOne(+id);
+    return this.destinoService.findOne(id);
   }
 
-  @Patch(':id')
+  @Put(':id')
   update(@Param('id') id: string, @Body() updateDestinoDto: UpdateDestinoDto) {
-    return this.destinoService.update(+id, updateDestinoDto);
+    return this.destinoService.update(id, updateDestinoDto);
   }
 
   @Delete(':id')
   remove(@Param('id') id: string) {
-    return this.destinoService.remove(+id);
+    return this.destinoService.remove(id);
   }
 }

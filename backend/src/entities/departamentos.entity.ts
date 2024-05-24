@@ -7,7 +7,4 @@ import { Usuarios } from './usuarios.entity';
 export class Departamentos extends Comun {
   @Column({ type: 'varchar', length: 120, nullable: true })
   public nombre: string;
-
-  @OneToMany(() => Usuarios, (usuarios) => usuarios.departamento_relation)
-  public UsuarioID: Usuarios[];
 }
